@@ -21,6 +21,9 @@ from src.util import time_estimate, isolate_voices
 # Load environment variables
 load_dotenv()
 
+# Debug: Print environment variables source
+logger.info(f"Environment loaded from: {os.environ.get('DOTENV_FILE', '.env')}")
+
 # Configuration
 ONLINE = os.getenv("ONLINE") == "True"
 DEVICE = os.getenv("DEVICE")
@@ -255,9 +258,26 @@ if __name__ == "__main__":
         )
 
     model.model.get_prompt = types.MethodType(get_prompt, model.model)
-    diarize_model = Pipeline.from_pretrained(
-        "pyannote/speaker-diarization", use_auth_token=os.getenv("HF_AUTH_TOKEN")
-    ).to(torch.device(DEVICE))
+    # Debug: Check if token is present and valid
+    hf_token = os.getenv("HF_AUTH_TOKEN")
+    if not hf_token:
+        logger.error("HF_AUTH_TOKEN not found in environment variables")
+        raise ValueError("HF_AUTH_TOKEN not found")
+    
+    # Debug: Print token length and prefix (safely)
+    logger.info(f"Token found - Length: {len(hf_token)}, Prefix: {hf_token[:6]}...")
+    logger.info("Initializing diarization model with token...")
+    
+    try:
+        diarize_model = Pipeline.from_pretrained(
+            "pyannote/speaker-diarization",
+            token=hf_token,
+            cache_dir=join(ROOT, "models") if ROOT else None
+        ).to(torch.device(DEVICE))
+        logger.info("Successfully loaded diarization model")
+    except Exception as e:
+        logger.error(f"Failed to load diarization model: {str(e)}")
+        raise
 
     if SUMMARIZATION:
         model_name_or_path = "bartowski/Qwen2.5-7B-Instruct-1M-GGUF"
