@@ -1,13 +1,11 @@
 #!/bin/bash
 
-# Start the first process
+# Start the worker and frontend processes in the background
 python worker.py &
-
-# Start the second process
 python main.py &
 
-# Wait for any process to exit
+# Wait for any process to exit.  This keeps the container running.
 wait -n
 
-# Exit with status of process that exited first
+# Exit with the status code of the first process that exited.
 exit $?

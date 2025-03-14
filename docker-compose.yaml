@@ -1,0 +1,40 @@
+
+services:
+  transcriber:
+    build:
+      context: .
+      dockerfile: Dockerfile  # Use the Dockerfile in the project root.
+      platform: linux/amd64
+    expose:
+      - 8080
+    volumes:
+      - ./data:/app/data:rw  # Persistent data directory.
+      - ./models:/app/models:rw # Persistent model storage
+    environment:
+      - ONLINE=True
+      - STORAGE_SECRET=${STORAGE_SECRET}  #  From your .env file!
+      - DEVICE=cuda
+      - HF_AUTH_TOKEN=${HF_AUTH_TOKEN}   #  From your .env file!
+      - BATCH_SIZE=${BATCH_SIZE:-4}      # Default to 4 if not set.
+      - SUMMARIZATION=${SUMMARIZATION:-False}  #  Default to False.
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+    networks:
+      - traefik_network # Connect to your Traefik network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.transcribo.rule=Host(`sp000200.kt.ktzh.ch`)"  # Your domain
+      - "traefik.http.routers.transcribo.entrypoints=websecure"  # Your HTTPS entrypoint
+      - "traefik.http.routers.transcribo.tls=true" # Enable TLS
+      - "traefik.http.services.transcribo.loadbalancer.server.port=8080" # Internal port
+      # - "traefik.http.middlewares.transcribo-auth.basicauth.users=admin:$$2y$$05$$8MQ3CPCp7yf1fyP8M8efvuGpSfyuhM3I.9cOCtSlBM5Bj"  #This is commented out!
+
+networks:
+  traefik_network:
+    external: true
