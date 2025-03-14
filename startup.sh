@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Start the worker and frontend processes in the background
-python worker.py &
-python main.py &
+python3 worker.py &
+python3 main.py &
 
 # Wait for any process to exit.  This keeps the container running.
 wait -n

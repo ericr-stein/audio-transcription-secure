@@ -3,8 +3,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile  # Use the Dockerfile in the project root.
-    expose:
-      - 8080
+    ports:
+      - "8080:8080"
     volumes:
       - ./data:/app/data:rw  # Persistent data directory.
       - ./models:/app/models:rw # Persistent model storage
@@ -23,16 +23,16 @@ services:
               count: 1
               capabilities: [gpu]
     restart: unless-stopped
-    networks:
-      - traefik_network # Connect to your Traefik network
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.transcribo.rule=Host(`${DOMAIN}`)"  # Your domain
-      - "traefik.http.routers.transcribo.entrypoints=websecure"  # Your HTTPS entrypoint
-      - "traefik.http.routers.transcribo.tls=true" # Enable TLS
-      - "traefik.http.services.transcribo.loadbalancer.server.port=8080" # Internal port
-      # - "traefik.http.middlewares.transcribo-auth.basicauth.users=admin:$$2y$$05$$8MQ3CPCp7yf1fyP8M8efvuGpSfyuhM3I.9cOCtSlBM5Bj"  #This is commented out!
+#    networks:
+#      - traefik_network # Connect to your Traefik network
+#    labels:
+#      - "traefik.enable=true"
+#      - "traefik.http.routers.transcribo.rule=Host(`${DOMAIN}`)"  # Your domain
+#      - "traefik.http.routers.transcribo.entrypoints=websecure"  # Your HTTPS entrypoint
+#      - "traefik.http.routers.transcribo.tls=true" # Enable TLS
+#      - "traefik.http.services.transcribo.loadbalancer.server.port=8080" # Internal port
+#      - "traefik.http.middlewares.transcribo-auth.basicauth.users=admin:$$2y$$05$$8MQ3CPCp7yf1fyP8M8efvuGpSfyuhM3I.9cOCtSlBM5Bj"  #This is commented out!
 
-networks:
-  traefik_network:
-    external: true
+#networks:
+#  traefik_network:
+#    external: true
